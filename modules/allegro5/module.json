@@ -1,0 +1,8 @@
+{
+	"module":"allegro5",
+	"about":"Allegro is cross-platform library mainly aimed at video game and multimedia programming.",
+	"author":"Allegro Team/Christophe Tes",
+	"version":"1.0.0",
+	"support":"http://monkey2.monkey-x.com or https://www.allegro.cc",
+	"depends":["libc"]
+}
