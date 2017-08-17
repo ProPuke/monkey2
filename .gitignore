@@ -7,6 +7,7 @@
 /desktop.ini
 
 /bin/*.dll
+/bin/*.exe
 /bin/assets
 /bin/ted2.state.json
 /bin/ted2_*
