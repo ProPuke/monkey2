@@ -43,6 +43,7 @@ Class ParseInfoGenerator
 		node.SetString( "kind",decl.kind )
 		node.SetString( "ident",decl.ident )
 		node.SetNumber( "flags",decl.flags )
+		node.SetString( "docs", decl.docs )
 		
 		If decl.members node.SetValue( "members",GenNode( decl.members ) )
 		
