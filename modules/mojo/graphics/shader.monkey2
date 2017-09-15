@@ -38,6 +38,9 @@ Class GLUniform
 		Else If name.StartsWith( "m_" )
 			name=name.Slice( 2 )
 			block=3
+		Else If name.StartsWith( "x_" )
+			name=name.Slice( 2 )
+			block=4
 		Endif
 		
 		uniformId=UniformBlock.GetUniformId( name,block )
@@ -48,18 +51,18 @@ End
 Class GLProgram
 
 	Field _glprogram:GLuint
-	Field _uniforms:=New GLUniform[4][]
-	Field _textures:=New GLUniform[4][]
-	Field _ublockSeqs:=New Int[4]
+	Field _uniforms:=New GLUniform[8][]
+	Field _textures:=New GLUniform[8][]
+	Field _ublockSeqs:=New Int[8]
 	Field _glRetroSeq:Int
 
 	Method New( glprogram:GLuint )
 
 		_glprogram=glprogram
 		
-		Local uniforms:=New Stack<GLUniform>[4]
-		Local textures:=New Stack<GLUniform>[4]
-		For Local i:=0 Until 4
+		Local uniforms:=New Stack<GLUniform>[8]
+		Local textures:=New Stack<GLUniform>[8]
+		For Local i:=0 Until 8
 			uniforms[i]=New Stack<GLUniform>
 			textures[i]=New Stack<GLUniform>
 		Next
@@ -95,7 +98,7 @@ Class GLProgram
 			
 		Next
 		
-		For Local i:=0 Until 4
+		For Local i:=0 until 8
 			_uniforms[i]=uniforms[i].ToArray()
 			_textures[i]=textures[i].ToArray()
 			_ublockSeqs[i]=-1
@@ -109,21 +112,21 @@ Class GLProgram
 
 	Method ValidateUniforms( ublocks:UniformBlock[] )
 		
-		For Local i:=0 Until 4
+		For Local i:=0 Until 8
 
 			Local ublock:=ublocks[ i ]
 			
-			If Not ublock Continue
-			
-			If ublock.Name<>i Print "OOOPS!"
-			
-			If ublock.Seq=_ublockSeqs[i] Continue
+			If Not ublock Or ublock.Seq=_ublockSeqs[i] Continue
 			
 			_ublockSeqs[i]=ublock.Seq
 			
 			For Local u:=Eachin _uniforms[i]
 			
 				Select u.type
+				Case GL_INT
+				
+					glUniform1i( u.location,ublock.GetInt( u.uniformId ) )
+					
 				Case GL_FLOAT
 				
 					glUniform1f( u.location,ublock.GetFloat( u.uniformId ) )
@@ -145,6 +148,10 @@ Class GLProgram
 					glUniformMatrix3fv( u.location,1,False,ublock.GetMat3fv( u.uniformId ) )
 					
 				Case GL_FLOAT_MAT4
+				
+					Local size:=u.size
+					
+					If size>1 size=ublock.GetMat4fArray( u.uniformId ).Length
 					
 					glUniformMatrix4fv( u.location,u.size,False,ublock.GetMat4fv( u.uniformId ) )
 					
@@ -157,10 +164,8 @@ Class GLProgram
 		
 		Next
 		
-		For Local i:=0 Until 4
+		For Local i:=0 Until 8
 			
-'			If Not ublocks[i] continue
-		
 			If Not _textures[i] Continue
 			
 			For Local u:=Eachin _textures[i]
@@ -291,7 +296,7 @@ Class Shader
 	
 	Field _rpasses:Int[]
 	Field _rpassMask:Int
-	Field _programs:=New GLProgram[8]
+	Field _programs:=New GLProgram[32]
 	Field _glSeq:Int
 	
 	Method EnumPasses()

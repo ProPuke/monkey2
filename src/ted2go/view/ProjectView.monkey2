@@ -8,6 +8,8 @@ Class ProjectView Extends ScrollView
 	
 	Field ProjectOpened:Void( dir:String )
 	Field ProjectClosed:Void( dir:String )
+	
+	Field RequestedFindInFolder:Void( folder:String )
 
 	Method New( docs:DocumentManager,builder:IModuleBuilder )
 	
@@ -52,11 +54,21 @@ Class ProjectView Extends ScrollView
 			
 		End
 		
-		browser.FileDoubleClicked+=Lambda( path:String )
+		If Prefs.SiblyMode
 		
-			OnOpenDocument( path )
+			browser.FileClicked+=Lambda( path:String )
+			
+				OnOpenDocument( path )
+			End
 		
-		End
+		Else 
+		
+			browser.FileDoubleClicked+=Lambda( path:String )
+			
+				OnOpenDocument( path )
+			End
+		
+		Endif
 		
 		browser.FileRightClicked+=Lambda( path:String )
 		
@@ -65,9 +77,9 @@ Class ProjectView Extends ScrollView
 			Select GetFileType( path )
 			Case FileType.Directory
 			
-				menu.AddAction( "Open on Desktop" ).Triggered=Lambda()
+				menu.AddAction( "Find..." ).Triggered=Lambda()
 				
-					requesters.OpenUrl( path )
+					RequestedFindInFolder( path )
 				End
 				
 				menu.AddSeparator()
@@ -84,7 +96,6 @@ Class ProjectView Extends ScrollView
 						Endif
 					End
 					d.ShowModal()
-					Return
 				End
 				
 				menu.AddSeparator()
@@ -99,7 +110,6 @@ Class ProjectView Extends ScrollView
 					CreateFileInternal( tpath )
 					
 					browser.Refresh()
-					Return
 				End
 				
 				menu.AddAction( "New folder" ).Triggered=Lambda()
@@ -120,7 +130,6 @@ Class ProjectView Extends ScrollView
 					Endif
 					
 					browser.Refresh()
-					Return
 				End
 				
 				menu.AddAction( "Delete" ).Triggered=Lambda()
@@ -205,6 +214,14 @@ Class ProjectView Extends ScrollView
 					Endif
 				Endif
 				
+				menu.AddSeparator()
+				
+				menu.AddAction( "Open on Desktop" ).Triggered=Lambda()
+				
+					requesters.OpenUrl( path )
+				End
+				
+				
 			Case FileType.File
 			
 				menu.AddAction( "Open on Desktop" ).Triggered=Lambda()
@@ -217,8 +234,8 @@ Class ProjectView Extends ScrollView
 				menu.AddAction( "Rename" ).Triggered=Lambda()
 				
 					Local oldName:=StripDir( path )
-					Local name:=RequestString( "Enter new name:","Ranaming '"+oldName+"'" )
-					If name=oldName Return
+					Local name:=RequestString( "Enter new name:","Ranaming '"+oldName+"'",oldName )
+					If Not name Or name=oldName Return
 					
 					Local newPath:=ExtractDir( path )+name
 					If CopyFile( path,newPath )

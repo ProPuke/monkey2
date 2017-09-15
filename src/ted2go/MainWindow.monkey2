@@ -51,7 +51,8 @@ Class MainWindowInstance Extends Window
 		End
 		
 		App.FileDropped+=Lambda( path:String )
-			_docsManager.OpenDocument( path,True )
+			
+			OnFileDropped( path )
 		End
 
 		_docsManager.DocumentAdded+=Lambda( doc:Ted2Document )
@@ -199,12 +200,20 @@ Class MainWindowInstance Extends Window
 			_buildErrorsList.Visible=True
 		End
 		
+		' ProjectView
+		'
 		_projectView=New ProjectView( _docsManager,_buildActions )
+		' project opened
 		_projectView.ProjectOpened+=Lambda( dir:String )
 			AddRecentProject( dir )
 			SaveState()
 		End
+		' project closed
 		_projectView.ProjectClosed+=OnProjectClosed
+		' find in folder
+		_projectView.RequestedFindInFolder+=Lambda( folder:String )
+			_findActions.FindInFiles( folder )
+		End
 		
 		_fileActions=New FileActions( _docsManager )
 		_editActions=New EditActions( _docsManager )
@@ -322,6 +331,7 @@ Class MainWindowInstance Extends Window
 		'
 		_buildActions.PreBuild+=OnPreBuild
 		_buildActions.PreSemant+=OnPreSemant
+		_buildActions.PreBuildModules+=OnPreBuildModules
 		
 		_buildMenu=New MenuExt( "Build" )
 		_buildMenu.AddAction( _buildActions.buildAndRun )
@@ -362,7 +372,7 @@ Class MainWindowInstance Extends Window
 		_helpMenu.AddSeparator()
 		_helpMenu.AddAction( _buildActions.rebuildHelp )
 		_helpMenu.AddSeparator()
-		_helpMenu.AddAction( _helpActions.onlineHelp )
+'		_helpMenu.AddAction( _helpActions.onlineHelp )
 		_helpMenu.AddAction( _helpActions.mx2homepage )
 		_helpMenu.AddAction( _helpActions.uploadModules )
 		_helpMenu.AddSeparator()
@@ -615,12 +625,16 @@ Class MainWindowInstance Extends Window
 	End
 	
 	Method StoreConsoleVisibility()
+	
+		If Prefs.SiblyMode return
 		
 		_storedConsoleVisible=_consolesTabView.Visible
 		_consoleVisibleCounter=0
 	End
 	
 	Method RestoreConsoleVisibility()
+	
+		If Prefs.SiblyMode Return
 	
 		If _consoleVisibleCounter > 0 Return
 		_consolesTabView.Visible=_storedConsoleVisible
@@ -884,7 +898,7 @@ Class MainWindowInstance Extends Window
 	End
 	
 	Method ShowBananasShowcase()
-		OpenDocument( Prefs.MonkeyRootPath+"bananas/!showcase/all.bananas" )
+		OpenDocument( Prefs.MonkeyRootPath+"bananas/ted2go-showcase/all.bananas" )
 	End
 	
 	Method ReadError( path:String )
@@ -999,6 +1013,7 @@ Class MainWindowInstance Extends Window
 	
 		_docsManager.OpenDocument( path,True )
 		If lockIt Then _buildActions.LockBuildFile()
+		UpdateWindow( True )
 	End
 	
 	Method GetActionFind:Action()
@@ -1048,6 +1063,15 @@ Class MainWindowInstance Extends Window
 		_docsTabView.EnsureVisibleCurrentTab()
 	End
 	
+	Method OnFileDropped( path:String )
+		
+		If FileExists( path )
+			_docsManager.OpenDocument( path,True )
+		Else
+			_projectView.OpenProject( path )
+		Endif
+	End
+	
 	Method OnAppClose()
 		
 		_fileActions.quit.Trigger()
@@ -1060,6 +1084,11 @@ Class MainWindowInstance Extends Window
 	End
 	
 	Method OnPreSemant()
+	
+		_buildErrorsList.Visible=False
+	End
+	
+	Method OnPreBuildModules()
 	
 		_buildErrorsList.Visible=False
 	End

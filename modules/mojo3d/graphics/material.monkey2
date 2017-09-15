@@ -5,14 +5,20 @@ Namespace mojo3d.graphics
 #end
 Class Material Extends Resource
 	
-	#rem monkeydoc Creates a new material
-	#end
-	Method New( shader:Shader=Null )
-		_shader=shader
-		_uniforms=New UniformBlock( 3 )
+	Method New()
+	
+		_uniforms=New UniformBlock( 3,True )
 		_blendMode=BlendMode.Opaque
 		_cullMode=CullMode.Back
+		
 		TextureMatrix=New AffineMat3f
+	End		
+	
+	#rem monkeydoc Creates a new material
+	#end
+	Method New( shader:Shader )
+		Self.New()
+		_shader=shader
 	End
 	
 	#rem monkeydoc Creates a copy of the material.
@@ -101,10 +107,13 @@ Class Material Extends Resource
 	#rem monkeydoc @hidden
 	#end
 	Method New( material:Material )
+
 		_shader=material._shader
 		_uniforms=New UniformBlock( material._uniforms )
+
 		_blendMode=material._blendMode
 		_cullMode=material._cullMode
+
 		TextureMatrix=material.TextureMatrix
 	End
 	

@@ -218,7 +218,11 @@ Class ClassType Extends Type
 		
 		If scope.IsGeneric Or cdecl.IsExtern
 		
-			Builder.semantMembers.AddLast( Self )
+			If Not scope.IsGeneric Or Builder.opts.makedocs
+				
+				Builder.semantMembers.AddLast( Self )
+			
+			Endif
 			
 		Else
 		

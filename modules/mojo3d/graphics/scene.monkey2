@@ -3,7 +3,7 @@ Namespace mojo3d.graphics
 
 #rem monkeydoc The Scene class.
 #end
-Class Scene
+Class Scene Extends DynamicObject
 
 	#rem monkeydoc Creates a new scene.
 	#end
@@ -86,15 +86,28 @@ Class Scene
 		_postEffects.Add( postEffect )
 	End
 	
-	#rem monkeydoc 	Destroys all entities in the scene.
+	#rem monkeydoc Removes a post effect from the scene
+	#end
+	Method RemovePostEffect( postEffect:PostEffect )
+		
+		_postEffects.Remove( postEffect )
+	End
 	
+	#rem monkeydocs Get all post effect that have been added to the scene
+	#end
+	Method GetPostEffects:PostEffect[]()
+		
+		Return _postEffects.ToArray()
+	End
+	
+	#rem monkeydoc Destroys all entities in the scene.
 	#end
 	Method DestroyAllEntities()
 		
-		For Local entity:=Eachin _rootEntities
-			
-			entity.Destroy()
-		Next
+		While Not _rootEntities.Empty
+
+			_rootEntities.Top.Destroy()
+		Wend
 	End
 	
 	#rem monkeydoc Renders the scene to	a canvas.
@@ -115,9 +128,17 @@ Class Scene
 		Return _rootEntities.ToArray()
 	End
 	
+	#rem monkeydoc Sets the current scene.
+	#end
+	Function SetCurrent( scene:Scene )
+		
+		_current=scene
+	End
+	
 	#rem monkeydoc Gets the current scene.
 	#end
 	Function GetCurrent:Scene()
+
 		If Not _current _current=New Scene
 			
 		Return _current
@@ -125,11 +146,6 @@ Class Scene
 	
 	Internal
 
-	Function SetCurrent( scene:Scene )
-		
-		_current=scene
-	End
-	
 	Property PostEffects:Stack<PostEffect>()
 		
 		Return _postEffects
@@ -165,6 +181,11 @@ Class Scene
 		Return _sprites
 	End
 	
+	Property ParticleSystems:Stack<ParticleSystem>()
+	
+		Return _psystems
+	End
+	
 	Private
 	
 	Global _current:Scene
@@ -184,5 +205,6 @@ Class Scene
 	Field _models:=New Stack<Model>
 	Field _terrains:=New Stack<Terrain>
 	Field _sprites:=New Stack<Sprite>
+	Field _psystems:=New Stack<ParticleSystem>
 			
 End
